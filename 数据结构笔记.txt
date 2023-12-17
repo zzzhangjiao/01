@@ -1,0 +1,754 @@
+----------动态规划五部曲--------------
+1.确定dp数组的含义
+2.确定递推公式
+3.初始化dp数组
+4.确定遍历顺序
+5.打印dp数组(一般用来纠错)
+----------动态规划五部曲--------------
+
+------------------------------使用映射来查找两数字和等于目标值---------------------------------
+牺牲空间复杂度来换取时间复杂度
+遍历一遍，如果找到target-nums[i]的值，就存储
+当遍历完成时，如果存在就一定可以找到
+vector<int>& func(vector<int>& nums)
+{
+	vector<int>v;
+	unordered_map<int,int>m;
+	for(int i=0;i<nums.size();i++)
+	{
+		   unordered_map<int,int>::iterator pos=m.find(target-nums[i]);
+		   if(pos!=m.end())
+		   {
+			   v.push_back(i);
+			   v.push_back(pos->second);
+		   }
+		   m[nums[i]]=i;
+	}
+	return v;
+}
+------------------------------使用映射来查找两数字和等于目标值---------------------------------
+------------------------------用迭代法来遍历二叉树---------------------
+用迭代法求中序二叉树是与求前序和后序是与众不同的
+中序：
+vector<int>& func(Tree* root)
+{
+	vector<int>v; 
+	strack<Tree*>s;
+	Tree temp=root;
+	if(root==NULL)
+	{
+		return v;
+	}
+	s.push(root);
+	while(temp!=NULL||!s.empty())
+	{
+		if(temp!=NULL)
+		{
+			s.push(temp->left);
+			temp=temp->left;
+		}
+		else
+		{
+			temp=s.top();
+			s.pop();
+			v.push_back(temp->val);
+			temp=temp->right;
+		}
+	}
+	return v;		
+}
+前序：
+vector<int>& func(Tree* root)
+{
+	vector<int>v;
+	strack<Tree*>s;
+	if(root==NULL)
+	{
+		return v;
+	}
+	s.push(root);
+	while(!s.empty())
+	{
+		Tree* node=s.top();
+		s.pop();
+		v.push_back(node->val);
+		if(node->right) s.push(node->right);
+		if(node->left) s.push(node->left);
+	}
+	return v;		
+}
+后序：
+vector<int>& func(Tree* root)
+{
+	vector<int>v;
+	strack<Tree*>s;
+	if(root==NULL)
+	{
+		return v;
+	}
+	s.push(root);
+	while(!s.empty())
+	{
+		Tree* node=s.top();
+		s.pop();
+		v.push_back(node->val);
+		if(node->left) s.push(node->left);
+		if(node->right) s.push(node->right);
+	}
+	reverse(v.begin(),v.end());
+	return v;		
+}
+------------------------------用迭代法来求中序二叉树---------------------
+
+--------------------------------------用单值栈解决下一个最大值-------------------------------
+如果需要找下一个最大值的话，就用单值栈+希哈来解决
+比方说给的是一个数组
+要求：找出每个元素的下一个最大值【在其右边且是第一个大于大于本元素的值】
+stack<int>s;
+unordered_map<int,int>m;
+for(int j=nums2.size()-1;j>=0;j--)
+{
+	int num=nums2[j];
+	while(!s.empty()&&nums2[j]>s.top())
+	{
+		s.pop();
+	}
+	m[num]=s.empty()?-1:s.top();
+	s.push(num);
+}
+这样一来m中就存取了所对应的下一个最大值了
+--------------------------------------用单值栈解决下一个最大值-------------------------------
+
+
+---------------------------------------------------------------树----------------------------------------------------------------------------
+
+--------寻找二叉树中的节点-------------
+Tree* found(Tree* root,Tree* target)
+{
+	if(root==NULL)
+	{
+		return NULL;
+	}
+	if(root==target)
+	{
+		return root;
+	}
+	Tree* left=found(root->left,target);
+	Tree* right=found(root->right,target);
+	if(left==NULL)
+	{
+		return right;
+	}
+	else
+	{
+		return left;
+	}
+}
+
+--------寻找二叉树中的节点-------------
+
+----------------------------用栈来解决递归的问题（树）--------------------------------
+写个一般的模版
+stack<Type>s;
+s.push(root);
+while(!s.empty())
+{
+	Tree* node=s.top();
+	s.pop();
+	/*
+	根据题目条件来写解决的具体步骤
+	*/
+	if(root->left) s.push(root->left);
+	if(root->right) s.push(root->right);
+		
+}
+----------------------------用栈来解决递归的问题（树）--------------------------------
+
+--------------------------------------------------判断两棵树是否相等或对称------------------------------------------
+/*
+首先，肯定要想到递归
+bool jugement(Tree t1,Tree t2);
+那么出口：当两棵树所对应的节点相同时，返回真，不同时，返回假
+递归体：如果是判断是否相等，比较两棵树的左子树和右子树，并返回二者结果的与
+             如果是判断是否对称，比较一棵树的左子树和另一棵树的右子树，并返回二者结果的与
+*/
+bool jugement(Tree t1,Tree t2)
+{
+	if(t1 == NULL&&t2 == NULL)
+	{
+		return true;
+	}
+	else if(t1 == NULL || t2 == NULL)
+	{
+		return false;
+	}
+	else if(t1->val != t2->val)
+	{
+		return  false;
+	}
+	else 
+	{
+		return jugement(t1->left,t2->left)&&jugement(t1->right,t2->right);//判断是否相等
+		return jugement(t1->left,t2->right)&&jugement(t1->right,t2->left);//判断是否对称
+	}
+}
+--------------------------------------------------判断两棵树是否相等或对称-----------------------------------------------
+
+-------------------------------------------------给定一个升序数组，将它转化为一棵高度平衡二叉树----------------------------
+/*
+平衡二叉树就是左子树的节点值比中间的小，右子树的节点值比中间的大
+因为数组是升序的，所以随便找一个值作为根，在其右边的就要放到右子树上，左边的就要放到左子树上
+所以要找中间值，而对于子树有事一个相同的问题，所以用递归
+Tree * creat(int *nums, int left, int right);
+出口为：只有中间一个时就退出(也就是left>right)，并return NULL;
+递归体：先给这个节点p分配内存，并把中间值赋给val
+             在依次创建它的左子树和右子树
+             最后return p；
+*/
+Tree* func(int* nums, int left,int  right)
+{
+    if(left>right)
+    {
+        return NULL;
+    }
+    else
+    {
+        Tree*p = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+        int mid = (left + right) / 2;
+        p->val=nums[mid];
+        p->left=func(nums, left, mid-1);
+        p->right=func(nums, mid+1, right);
+        return p;
+    }
+}
+-------------------------------------------------给定一个数组，将它转化为一棵高度平衡二叉树----------------------------
+
+-------------------------------------------判断是否是平衡二叉树----------------------------
+只需要比较每个节点左右子树的高度差是否超过1
+递归出口：当root==NULL时，return true;
+	当高度差超过1时，返回false
+递归体：分别判断每个节点，并返回结果的与
+int height(struct TreeNode* root)
+{
+    if(root==NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        int left=height(root->left);
+        int right=height(root->right);
+        return (left>right?left:right)+1;
+    }
+}
+
+bool isBalanced(struct TreeNode* root){
+    if(root==NULL)
+    {
+        return true;
+    }
+    else if(fabs(height(root->left)-height(root->right))>1)
+    {
+        return false;
+    }
+    else
+    {
+        return isBalanced(root->left)&&isBalanced(root->right);
+    }
+}
+-------------------------------------------判断是否是平衡二叉树----------------------------
+
+------------------------------------------ - - 求最小深度是从根节点到最近叶子节点的最短路径上的节点数量-------------------------------------
+int minDepth(Tree* root);
+递归出口:当root==NULL时，return0
+	当root->left==NULL&&root->right==NULL,return 1;
+递归体：其他就分别累加计算左和右子树的最小距离
+当然，还要判断根节点没有左或右子树的情况，最后return 最小距离
+int minDepth(Tree* root)
+{
+	int left,right;
+	if(root==NULL)
+	{
+		return 0;
+	}
+	else if(root->left==NULL&&root->right==NULL)
+	{	
+		return 1;
+	}
+	else
+	{
+		left+=minDepth(root->left);
+		right+=minDepth(root->right);
+	}
+	if(left==0)
+	{
+		return right+1;
+	}
+	else if(right==0)
+	{
+		return left+1;
+	}
+	else
+	{
+		return (left>right?right:left)+1;
+	}
+}
+------------------------------------------ - - 求最小深度是从根节点到最近叶子节点的最短路径上的节点数量-------------------------------------
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+给你二叉树的根节点 root 和一个表示目标和的整数 targetSum 。判断该树中是否存在 根节点到叶子节点 的路径，这条路径上所有节点值相加等于目标和 targetSum
+bool hasPathSum(Tree* root, int targetSum);
+递归出口：if(root==NULL) return false;
+	if(root->left==NULL&&root->right==NULL),  那就判断该节点的值是否等于目标值
+	但是这个目标值不是原来的目标值，而是减去这条路径除去最后这个节点剩下来的值
+递归体：分别递归左和右子树，并return它们结果的或
+bool hasPathSum(struct TreeNode* root, int targetSum)
+{
+	if(root==NULL)
+	{
+		return false;
+	}
+	else if(root->left==NULL&&root->right==NULL)
+	{	
+		return targetSum==root->val;
+	}
+	else
+	{
+		return hasPathSum（root->left,targetSum-root->val）|| hasPathSum（root->right,targetSum-root->val）;
+	}
+}
+	
+
+--------------------------------------------------------------生成二叉镜像树-------------------------------------	
+把每个节点的左右孩子互换一下就可以得到二叉镜像树了
+Tree* invertTree(Tree* root)
+{
+	if(root==NULL)
+	{
+		return NULL;
+	}
+	Tree* left=invertTree(root->left);
+	Tree* right=invertTree(root->right);
+	root->right=left;
+	root->left=right;
+	return root;
+}
+--------------------------------------------------------------生成二叉镜像树-------------------------------------	
+
+
+--------------------------------------收集二叉树所有路径-----------------------
+节点与节点用->连接
+存放在vector中
+直接递归不好处理一个节点只有左或右子树的情况，所以要回溯
+参数很重要，慢慢积累经验吧！！！
+void func(TreeNode* root,string path,vector<string>&paths)
+{
+	if(root!=NULL)
+	{
+		path+=to_string(root->val);
+		if(root->left&&root->right)//为叶子节点，表示找到一条路径
+		{
+			paths.push_back(path);
+		}
+		path+="->";
+		func(root->left,path,paths);
+		func(root->right,path,paths);
+	}
+}
+
+vector<string> binaryTreePaths(TreeNode* root)
+{
+        vector<string>paths;
+        func(root,"",paths);
+        return  paths;
+}
+
+把二叉树每条路径上的节点值做一系列的运算：
+*******************
+例如要统计每条路径上的节点值之和
+*****注：*******
+一般统计每条路径要设一个临时变量来加上每个节点的值
+但这是递归！！！！！
+可以用函数参数来代替这个临时变量
+因为在递归中，它会保存在每个节点temp所对应的值
+比如对于一个有左右节点的根来说
+假设递归到这个根temp=5
+左孩子的节点值为1，右为2
+当走左孩子时，temp=temp(5)+1;
+当走右孩子时，temp=temp(5)+2;
+在依次存入vector中
+*****注：*******
+void func(TreeNode* root,int temp,vector<int>&v)
+{
+	if(root!=NULL)
+	{
+		temp+=root->val;
+		if(root->left==NULL&&root->right==NULL)
+		{
+			v.push_back(temp);
+		}
+		func(root->left,temp,v);
+		func(root->right,temp,v);
+	}
+}
+vector<int>&v sum_tree(TreeNode* root)
+{
+	func(root,0,v);
+	return v;
+}
+*******************
+
+--------------------------------------收集二叉树所有路径-----------------------
+
+----------------------------------二叉搜索树-------------------------
+对于二叉搜索树
+中序遍历是有序的
+所以一般利用这个特性来解决问题
+所以一般的解题模板为：
+ReturnType solution(TreeNode* root)
+{
+	if(root!=NULL)
+	{
+		solution(root->left);
+		/*
+			具体问题的解决思路
+			tip：一般要设一个前驱节点来与当前根节点进行比较
+				TreeNode* pre=NULL;
+				.......
+				pre=root;//更新pre节点
+		*/
+		solution(root->right);
+	}
+}
+----------------------------------二叉搜索树-------------------------
+
+---------------------------------先序遍历解决二叉树问题----------------------------
+注：对于一棵没有重复节点的二叉树
+可以根据节点所对应的值来判断父亲节点是否相同
+例如下面：
+int get_parent(TreeNode* root,int target)
+    {
+        if(root==NULL)
+        {
+            return 0;
+        }
+        if(root->left&&root->left->val==target)
+        {
+            return root->val;
+        }
+        if(root->right&&root->right->val==target)
+        {
+            return root->val;
+        }
+        int left=get_parent(root->left,target);
+        int right=get_parent(root->right,target);
+        if(left==0)
+        {
+            return right;
+        }
+        else
+        {
+            return left;
+        }
+    }
+用先序遍历解决二叉树问题的一般方法：
+大致的模板就是这样
+Type func(TreeNode* root,.....)
+{
+	if(root==NULL) return ....
+	
+	if(root->left!=NULL&&....)
+		.......
+	if(root->right!=NULL&&....)
+		.....
+		
+	Type left=func(root->left,....);
+	Type right=func(root->right,....);
+}
+---------------------------------先序遍历解决二叉树问题----------------------------
+
+--------------------------对于结果需要计算每个节点所对应的参数----------------------
+一般都是第一个全局变量
+在求每个节点的时候就把需要的答案算出来
+例如：
+在计算每个节点和时算出答案
+int calculate(TreeNode* root)
+{
+	if(root==NULL)
+	{
+		return 0;
+	}
+	int L=calculate(root->left);
+	int R=calculate(root->right);
+	sum+=abs(L-R);//本来除去这句，就是一个完整的计算结点之和的方法，根据题目要求加一个全局变量和一段逻辑就可以解决问题
+	return root->val+L+R;
+}
+例如：
+在计算每个节点深度时算出答案
+int func(TreeNode* root)
+{
+	if(root==NULL)
+	{
+		return 0;
+	}
+	int lhigh=func(root->left);
+	int rhigh=func(root->right);
+	temp=max(temp,lhigh+rhigh+1);//本来除去这句，就是一个完整的计算节点深度的方法，根据题目要求加一个全局变量和一段逻辑就可以解决问题
+	return max(lhigh,rhigh)+1;
+}
+--------------------------对于结果需要计算每个节点所对应的参数----------------------
+	
+---------------------------------------------------------------树---------------------------------------------------------------
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------链表---------------------------------------------------------------------------------------------
+-----------------------判断链表中是否含有环-----------------------【利用速度差】
+用快慢指针来解决问题
+struct ListNode *low=head;
+struct ListNode *fast=head->next;
+当链表中含有环时，快指针一定会遇到慢指针
+慢指针一次移动一步，快指针一次移动两步
+bool hasCycle(struct ListNode *head)
+{
+	if(head==NULL||head->next==NULL)
+	{
+		return false;      //没有环返回false
+	}
+	while(low!=fast)
+	{
+		if(fast==NULL||fast->next==NULL)     //判断是否有移动的条件
+		{
+			return fasle;
+		}
+		low=low->next;
+		fast=fast->next->next;
+	}
+	return true;
+}
+-----------------------判断链表中是否含有环-----------------------
+
+-----------------------判断两个链表中是否有相交的起始节点-----------------------【利用节点数量差】
+利用个数差来解决问题
+先定义两个指针，分别指向两个链表的头结点，以相同的速度向前移动
+如果两个链表一样长，那么当它们相等时所在的位置极为所求
+否则，
+当一个链表走到NULL时，就让它从另一个链表的头节点开始移动，就一定会相遇
+当两个链表没有相交节点时，它们就会在某一时刻同时走到NULL，此时返回的就是NULL了
+struct ListNode *getIntersectionNode(struct ListNode *headA, struct ListNode *headB) {
+    struct ListNode *p=headA;
+    struct ListNode *q=headB;
+    while(p!=q)
+    {
+        p=p==NULL?headB:p->next;
+        q=q==NULL?headA:q->next;
+    }
+    return p;
+}
+-----------------------判断两个链表中是否有相交的起始节点-----------------------
+
+-----------------------翻转链表---------------------------------------------
+//对于没头结点的单链表【有头结点的单链表就不需要new一个head】
+ListNode* reserve(ListNode* node)
+{
+	ListNode* head=new struct ListNode;
+	head->next=NULL;
+	ListNode* p;
+	while(node!=NULL)
+	{
+		p=node->next;
+		node->next=head->next;
+		head->next=node;
+		node=p;
+	}
+	return head->next;
+}
+-----------------------翻转链表---------------------------------------------
+
+------------------------------------------------------------------------------------链表------------------------------------------------------------------
+
+--------------------------- 摩尔投票法---------------------------------
+用来找一个数组中出现最多的元素
+首先定义一个result表示结果，定义一个计数器表示出现的个数
+然后遍历整个数组
+当count==0时，result=下一个元素
+如果当前元素=result的话，count++，否则count--
+遍历完成时，result就是最终结果
+int majorityElement(int* nums, int numsSize){
+    int result;
+    int count=0;
+    for(int i=0;i<numsSize;i++)
+    {
+        if(count==0)
+        {
+            result=nums[i];
+        }
+        if(result==nums[i])
+        {
+            count++;
+        }
+        else
+        {
+            count--;
+        }
+    }
+    return result;
+}
+
+--------------------------- 摩尔投票法---------------------------------
+
+--------------------------判断是否为快乐数字--------------------
+「快乐数」 定义为：
+对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和。
+然后重复这个过程直到这个数变为 1，也可能是 无限循环 但始终变不到 1。
+如果这个过程 结果为 1，那么这个数就是快乐数。
+
+当一个数无限按照这样计算时，就会进入一个循环当中
+因此，我们用快慢指针，当慢指针==快指针时，只需要判断慢指针是否==1就可以了
+class solution
+{
+public:
+	int calculate(int m)
+	{
+		int sum=0;
+		while(m>0)
+		{	
+			sum+=pow(m%10,2);
+			m/=10;
+		}
+		return sum;
+	}
+	bool isHappy(int n)
+	{
+		int low=n;
+		int fast =calculate(n);
+		while(low!=fast)
+		{
+			low=calculate(low);
+			fast=calculate(calculate(fast));
+		}
+		return low==1;
+	}
+
+--------------------------判断是否为快乐数字--------------------
+
+----------------------------------对应位置相加且有进位情况的简洁写法-----------------------------
+while(条件1 || 条件2）
+{
+***	int x = len1>0 ? num1[len1] :　０；
+***	int ｙ = len２>0 ? num２[len２] :　０；
+	arr[count++] = (x + y + 进位）% 10;
+	进位 = (x + y + 进位）/ 10;
+	len1--,len2--;
+}
+if(进位 != 0)
+{
+	arr[count++] = 1;
+}
+arr[count] = 0;
+
+----------------------------------对应位置相加且有进位情况的简洁写法-----------------------------
+
+---------------------------------C语言中qsort算法--------------------------------
+int cmp(const void* a,const void* b)
+{
+	return *(int*)a-*(int*)b;
+}
+qsort(要排序数组的地址,元素个数,sizeof(元素类型),cmp);
+
+---------------------------------C语言中qsort算法--------------------------------
+
+
+
+---------------------------------滑动窗口--------------------------------------
+用于解决需要在一个定长的区间里找答案的问题【一般要配合hash使用】
+方法：
+先维护一个一定大小hash表【一般为unordered_map容器】，之后在做各种判断
+比较灵活，需要仔细找出临界条件
+---------------------------------滑动窗口--------------------------------------
+
+
+--------------------------------栈-------------------------------
+栈一般可用于判断回文
+先把要判断的元素从头到尾入栈
+在依次出栈与原数据比较是否相同
+bool func(........)
+{
+	stack<Type>s;
+	while(!NULL)
+	{
+		s.push(val)
+	}
+	while(!s.empty())
+	{
+		if(val!=s.top())
+		{
+			return  false;
+		}
+		s.pop();
+	}
+	return true;
+}
+--------------------------------栈-------------------------------
+
+---------------------------------位运算--------------------------
+判断一个数是否为2的n次方
+bool func(int n)
+{
+	return n>0&&(n&(n-1))==0;
+}
+---------------------------------位运算--------------------------
+
+----------------------------判断两字符串里的相同字母数量是否相同------------------------------
+首先，长度不一样肯定是不可以的
+然后就可以遍历其中一个字符串，建立一个hash表，初始化为0
+其中一个字符串对应的字母负责++，另一个负责--
+最后遍历hash表的值是否全为0即可
+bool isAnagram(string s, string t)
+{
+        if(s.size()!=t.size())
+        {
+            return false;
+        }
+        int hash[26]={0};
+        for(int i=0;i<s.size();i++)
+        {
+            hash[s[i]-'a']++;
+            hash[t[i]-'a']--;
+        }
+        for(int i=0;i<26;i++)
+        {
+            if(hash[i]!=0)
+            {
+                return false;
+            }
+        }
+        return true;
+}
+----------------------------判断两字符串里的相同字母数量是否相同------------------------------
+
+--------------------------priority_queue------------------------
+优先队列
+priority_queue（Type,容器Type，排列顺序）//默认是less
+默认情况下是大堆（优先输出最大的元素）
+把最后一个参数改为greater就为小堆（优先输出最小的元素）
+优先队列也就是
+--------------------------priority_queue------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
